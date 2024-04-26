@@ -80,26 +80,58 @@ export class AuthService {
 
   async profile(user_id: number) {
     const user = await this.prisma.users.findUnique({
-        where: {
-            id: user_id
-        },
-        select: {
-            id: true,
-            name: true,
-            email: true
-        }
+      where: {
+        id: user_id,
+      },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        avatar: true,
+      },
     });
 
     if (!user) {
-        throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
     }
 
     return {
+      statusCode: HttpStatus.OK,
+      message: 'Profile',
+      data: user,
+    };
+  }
+
+  async uploadAvatar(user_id: number, avatar) {
+    const checkuserExists = await this.prisma.users.findFirst({
+      where: {
+        id: user_id,
+      },
+    });
+
+    if (checkuserExists) {
+      const updateAvatar = await this.prisma.users.update({
+        data: {
+          avatar: avatar,
+        },
+        where: {
+          id: user_id,
+        },
+      });
+
+      if (!updateAvatar) {
+        throw new HttpException(
+          'Failed to update avatar',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      return {
         statusCode: HttpStatus.OK,
-        message: 'Profile',
-        data: user
+        message: 'Avatar has been updated',
+      };
     }
-}
+  }
 
   generateJWT(payload: any) {
     return this.jwtService.sign(payload, {
