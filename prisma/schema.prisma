@@ -9,23 +9,36 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider     = "postgresql"
+  url          = env("DATABASE_URL")
+  relationMode = "prisma"
 }
 
 model tasks {
-  id          Int      @id @default(autoincrement())
-  task_name   String
-  task_description String  @db.Text
-  created_at  DateTime @default(now())
+  id               Int      @id @default(autoincrement())
+  id_user          Int
+  task_name        String
+  task_description String   @db.Text
+  created_at       DateTime @default(now()) @map("created_at")
+  users            users?   @relation(fields: [id_user], references: [id])
+
+  @@index([id_user])
 }
 
-
 model users {
-  id          Int      @id @default(autoincrement())
-  name        String
-  email       String  @unique
-  password    String
-  avatar      String?
-  created_at  DateTime @default(now())
+  id         Int      @id @default(autoincrement())
+  name       String
+  email      String   @unique
+  password   String
+  avatar     String?
+  created_at DateTime @default(now())
+  tasks      tasks[]
+}
+
+model schools {
+  id          Int     @id @default(autoincrement())
+  school_name String
+  email       String?
+  address     String?
+  phone       String?
 }

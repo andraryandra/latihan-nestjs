@@ -2,6 +2,9 @@ import { IsOptional, IsString } from "class-validator";
 
 export class UpdateTaskDto {
 
+    @IsOptional()
+    id_user: number;
+
     @IsOptional() //IsOption berfungsi sebagai nullable(), dapat diisi atau tidak
     @IsString() //IsString berfungsi sebagai tipe data string
     task_name: string;

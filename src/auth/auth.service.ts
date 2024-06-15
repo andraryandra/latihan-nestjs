@@ -78,7 +78,7 @@ export class AuthService {
     }
   }
 
-  async profile(user_id: number) {
+  async profile(user_id: number){
     const user = await this.prisma.users.findUnique({
       where: {
         id: user_id,
@@ -88,6 +88,7 @@ export class AuthService {
         name: true,
         email: true,
         avatar: true,
+        tasks: true,
       },
     });
 
@@ -95,11 +96,7 @@ export class AuthService {
       throw new HttpException('User not found', HttpStatus.NOT_FOUND);
     }
 
-    return {
-      statusCode: HttpStatus.OK,
-      message: 'Profile',
-      data: user,
-    };
+    return user;
   }
 
   async uploadAvatar(user_id: number, avatar) {

@@ -1,37 +1,52 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
-// import { validate } from 'class-validator';
+import { REQUEST } from '@nestjs/core';
 
 @Injectable()
 export class TaskService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    @Inject(REQUEST) private req: any,
+  ) {}
 
   async createTask(data: CreateTaskDto) {
+
+    data.id_user = this.req.user.id;
     const createData = await this.prisma.tasks.create({
       data: data,
     });
 
-    return {
-      statusCode: 200,
-      message: 'Data has been created',
-      data: createData,
-    };
+   return createData;
   }
 
   async getAllTask() {
-    const dataTask = await this.prisma.tasks.findMany();
-    return {
-      statusCode: 200,
-      data: dataTask,
-    };
+
+    const dataTask = await this.prisma.tasks.findMany({
+      where: {
+        id_user: this.req.user.id,
+      },
+      include: {
+        users: {
+          select: {
+            id: true,
+            name: true,
+            avatar: true,
+            email: true,
+          }
+        }
+      },
+    })
+
+    return dataTask;
   }
 
   async getTaskById(task_id: number) {
     const dataTask = await this.prisma.tasks.findFirst({
       where: {
         id: task_id,
+        id_user: this.req.user.id,
       },
     });
 
@@ -42,13 +57,11 @@ export class TaskService {
       };
     }
 
-    return {
-      statusCode: 200,
-      data: dataTask,
-    };
+    return dataTask;
   }
 
   async updateTaskById(task_id: number, data: UpdateTaskDto) {
+    data.id_user = this.req.user.id;
     const updateData = await this.prisma.tasks.update({
       where: {
         id: task_id,
@@ -56,10 +69,7 @@ export class TaskService {
       data: data,
     });
 
-    return {
-      statusCode: 200,
-      data: updateData,
-    };
+    return updateData;
   }
 
   async deleteTaskById(task_id: number) {
@@ -69,10 +79,6 @@ export class TaskService {
       },
     });
 
-    return {
-      statusCode: 200,
-      message: 'Data has been deleted',
-      data: deleteData,
-    };
+    return deleteData;
   }
 }
